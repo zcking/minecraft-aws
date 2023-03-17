@@ -40,7 +40,7 @@ provider "aws" {
 }
 
 module "minecraft" {
-  source        = "../minecraft"
+  source = "../minecraft"
   providers = {
     aws           = aws
     aws.us-east-1 = aws.us-east-1

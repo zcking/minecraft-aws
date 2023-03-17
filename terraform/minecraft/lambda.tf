@@ -47,16 +47,10 @@ resource "aws_lambda_function" "minecraft-launcher" {
   }
 }
 
-resource "aws_cloudwatch_log_subscription_filter" "minecraft-launcher" {
-  name            = "minecraft-launcher"
-  log_group_name  = aws_cloudwatch_log_group.route53-main.name
-  destination_arn = aws_lambda_function.minecraft-launcher.arn
-  filter_pattern  = "minecraft.${var.domain_name}"
-}
-
-resource "aws_lambda_permission" "cloudwatch-permission" {
+// Allow SES to invoke the lambda function (upon receiving email)
+resource "aws_lambda_permission" "ses-permission" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.minecraft-launcher.function_name
-  principal     = "logs.us-east-1.amazonaws.com"
-  source_arn    = "${aws_cloudwatch_log_group.route53-main.arn}:*"
+  principal     = "ses.amazonaws.com"
+  source_arn    = "arn:aws:ses:${var.region}:${var.account}:receipt-rule-set/*"
 }

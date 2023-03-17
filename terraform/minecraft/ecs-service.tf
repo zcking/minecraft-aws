@@ -19,6 +19,14 @@ resource "aws_ecs_service" "minecraft-server" {
       aws_security_group.minecraft-server.id
     ]
   }
+
+  # In case we want to apply terraform changes while the server is up
+  # ignore the desired_count attribute
+  lifecycle {
+    ignore_changes = [
+      desired_count
+    ]
+  }
 }
 
 resource "aws_security_group" "minecraft-server" {
@@ -28,9 +36,10 @@ resource "aws_security_group" "minecraft-server" {
     from_port = 25565
     to_port   = 25565
     cidr_blocks = [
-      "107.122.96.147/32",
-      "166.205.140.81/32"
-    ] // TODO: may need to switch this to 0.0.0.0/0
+      # "107.122.96.147/32",
+      # "166.205.140.81/32",
+      "0.0.0.0/0"
+    ]
   }
 
   egress {
