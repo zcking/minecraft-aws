@@ -85,7 +85,8 @@ module "minecraft" {
   s3_bucket_arn = "arn:aws:s3:::example-com-us-east-1"
   minecraft_server_cpu    = 1024
   minecraft_server_memory = 2048
-  // optional
+  // optional - enabling this allow you to get into your ecs container:
+  // ex: aws ecs execute-command --cluster minecraft --command "/bin/sh" --container minecraft-server --interactive --task 7b26500738354a4ea75cb4925999a4f4 
   ecs_service_enable_execute_command = false
   // optional
   extra_minecraft_server_env_vars = {
