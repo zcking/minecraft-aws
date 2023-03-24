@@ -57,7 +57,7 @@ resource "aws_ecs_task_definition" "minecraft-server" {
         },
         {
           name  = "DNSZONE",
-          value = local.zone_id
+          value = aws_route53_zone.main.zone_id
         },
         {
           name  = "SERVERNAME",

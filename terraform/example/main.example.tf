@@ -69,6 +69,16 @@ module "minecraft" {
   region        = "us-east-1"
   account       = local.account_id
   vpc_id        = local.vpc_id
+  /* ATTENTION: If your domain is registered with AWS Route53 you must import
+   * your aws_route53_zone state so you don't create duplicate hosted zones
+   * which will fail your SES domain identity verification and break your
+   * domain's DNS. 
+   * https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_zone#import
+   *
+   * Ex: terraform import module.minecraft.aws_route53_zone.main Z1D633PJN98FT9
+   *     where 'Z1D633PJN98FT9' is the Hosted zone ID.
+   *
+   */
   domain_name   = "example.com"
   cluster_name  = "minecraft"
   service_name  = "minecraft-server"
