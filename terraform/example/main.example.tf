@@ -24,11 +24,11 @@ provider "archive" {}
 provider "aws" {
   region = "us-east-1"
   default_tags {
-    tags = {
+    tags = merge(local.tags, {
       Environment = "dev"
       Project     = "minecraft"
       DeployedBy  = "Terraform"
-    }
+    })
   }
 }
 
@@ -37,11 +37,11 @@ provider "aws" {
   alias  = "us-east-1"
 
   default_tags {
-    tags = {
+    tags = merge(local.tags, {
       Environment = "dev"
       Project     = "minecraft"
       DeployedBy  = "Terraform"
-    }
+    })
   }
 }
 
