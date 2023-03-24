@@ -1,11 +1,18 @@
-resource "aws_route53_zone" "main" {
+data "aws_route53_zone" "existing" {
   name = var.domain_name
 }
 
-// Create the DNS record that will verify our ownership of
-// the domain name in Amazon Route53.
+resource "aws_route53_zone" "main" {
+  count = length(data.aws_route53_record.existing[*]) > 0 ? 0 : 1
+  name = var.domain_name
+}
+
+locals {
+  zone_id = try(data.aws_route53_record.existing.zone_id, aws_route53_zone.main.zone_id)
+}
+
 resource "aws_route53_record" "ses_verification_record" {
-  zone_id = aws_route53_zone.main.zone_id
+  zone_id = local.zone_id
   name    = "_amazonses.${aws_ses_domain_identity.main.id}"
   type    = "TXT"
   ttl     = "600"
@@ -14,10 +21,8 @@ resource "aws_route53_record" "ses_verification_record" {
   ]
 }
 
-// Create a MX (Mail Exchanger) record to allow receiving
-// mail at our domain name, using Amazon SES.
 resource "aws_route53_record" "mx" {
-  zone_id = aws_route53_zone.main.zone_id
+  zone_id = local.zone_id
   name    = ""
   type    = "MX"
   ttl     = "300"
@@ -27,7 +32,7 @@ resource "aws_route53_record" "mx" {
 }
 
 resource "aws_route53_record" "minecraft" {
-  zone_id = aws_route53_zone.main.zone_id
+  zone_id = local.zone_id
   name    = "minecraft"
   type    = "A"
   ttl     = "30"
