@@ -3,12 +3,12 @@ data "aws_route53_zone" "existing" {
 }
 
 resource "aws_route53_zone" "main" {
-  count = length(data.aws_route53_record.existing[*]) > 0 ? 0 : 1
+  count = length(data.aws_route53_zone.existing.zone_id) > 0 ? 0 : 1 // length(data.aws_route53_zone.existing[*]) > 0 ? 0 : 1
   name = var.domain_name
 }
 
 locals {
-  zone_id = try(data.aws_route53_record.existing.zone_id, aws_route53_zone.main.zone_id)
+  zone_id = try(data.aws_route53_zone.existing.zone_id, aws_route53_zone.main[0].zone_id)
 }
 
 resource "aws_route53_record" "ses_verification_record" {

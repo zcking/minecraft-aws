@@ -1,9 +1,21 @@
+locals {
+  default_minecraft_server_env_vars = { "EULA" = "TRUE" }
+  minecraft_server_env_vars = merge(
+    var.extra_minecraft_server_env_vars,
+    local.default_minecraft_server_env_vars
+  )
+  _minecraft_server_environment = [
+    for k, v in local.minecraft_server_env_vars :
+    { name = k, value = v }
+  ]
+
+}
 resource "aws_ecs_task_definition" "minecraft-server" {
   family                   = "minecraft-server"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu                      = 1024 // 1 vCPU
-  memory                   = 2048 // 2 GB
+  cpu                      = var.minecraft_server_cpu
+  memory                   = var.minecraft_server_memory
   task_role_arn            = aws_iam_role.minecraft.arn
 
   container_definitions = jsonencode([
@@ -11,8 +23,8 @@ resource "aws_ecs_task_definition" "minecraft-server" {
     {
       name      = "minecraft-server"
       image     = "itzg/minecraft-server"
-      cpu       = 1024
-      memory    = 2048
+      cpu       = var.minecraft_server_cpu
+      memory    = var.minecraft_server_memory
       essential = false
       portMappings = [
         {
@@ -20,12 +32,7 @@ resource "aws_ecs_task_definition" "minecraft-server" {
           hostPort      = 25565
         }
       ]
-      environment = [
-        {
-          name  = "EULA"
-          value = "TRUE"
-        }
-      ]
+      environment = local._minecraft_server_environment
       mountPoints = [
         {
           sourceVolume  = "data"
@@ -50,7 +57,7 @@ resource "aws_ecs_task_definition" "minecraft-server" {
         },
         {
           name  = "DNSZONE",
-          value = aws_route53_zone.main.zone_id
+          value = local.zone_id
         },
         {
           name  = "SERVERNAME",

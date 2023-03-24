@@ -117,3 +117,14 @@ resource "aws_iam_role_policy" "minecraft" {
   role        = aws_iam_role.minecraft.id
   policy      = data.aws_iam_policy_document.minecraft-policy.json
 }
+
+data "aws_iam_policy" "ssm" {
+  count = var.ecs_service_enable_execute_command ? 1 : 0 
+  arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_to_ecs_role" {
+  count = var.ecs_service_enable_execute_command ? 1 : 0 
+  role = aws_iam_role.minecraft.name
+  policy_arn = data.aws_iam_policy.ssm[0].arn
+}

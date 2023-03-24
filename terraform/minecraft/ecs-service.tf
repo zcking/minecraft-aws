@@ -3,12 +3,12 @@ resource "aws_ecs_service" "minecraft-server" {
   cluster         = aws_ecs_cluster.minecraft.id
   task_definition = aws_ecs_task_definition.minecraft-server.arn
   desired_count   = 0
-  # iam_role        = aws_iam_role.minecraft.arn
   depends_on = [
     aws_iam_role.minecraft
   ]
-  launch_type      = "FARGATE"
-  platform_version = "LATEST"
+  enable_execute_command = var.ecs_service_enable_execute_command
+  launch_type            = "FARGATE"
+  platform_version       = "LATEST"
 
   network_configuration {
     assign_public_ip = true
@@ -29,17 +29,28 @@ resource "aws_ecs_service" "minecraft-server" {
   }
 }
 
+locals {
+  default_ingresses = [
+    {
+      protocol  = "tcp"
+      from_port = 25565
+      to_port   = 25565
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  ]
+  _ingresses = concat(local.default_ingresses, var.extra_ingresses)
+}
 resource "aws_security_group" "minecraft-server" {
   name_prefix = "minecraft-server"
-  ingress {
-    protocol  = "tcp"
-    from_port = 25565
-    to_port   = 25565
-    cidr_blocks = [
-      # "107.122.96.147/32",
-      # "166.205.140.81/32",
-      "0.0.0.0/0"
-    ]
+
+  dynamic "ingress" {
+    for_each = local._ingresses
+    content {
+      protocol    = ingress.value.protocol
+      from_port   = ingress.value.from_port
+      to_port     = ingress.value.to_port
+      cidr_blocks = ingress.value.cidr_blocks
+    }
   }
 
   egress {
